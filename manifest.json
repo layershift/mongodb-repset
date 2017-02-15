@@ -51,14 +51,14 @@
                                         "killall mongod",
                                         "rm -rf /var/lib/mongo/* ",
                                         "mkdir /etc/mongo",
-                                        "wget -q -O /etc/rsyncd.secrets http://jps.layershift.com/mongoreplica/rsyncdpass",
+                                        "wget -q -O /etc/rsyncd.secrets https://raw.githubusercontent.com/layershift/mongodb-repset/master/configs/rsyncd_secret",
                                         "chmod 400 /etc/rsyncd.secrets"
                                 ],
                                 "user": "root"
                             }, {
                                 "nodeId": "${nodes.nosqldb[0].id}",
                                 "commands": [
-                                        "wget -q -O /etc/rsyncd.conf http://jps.layershift.com/mongoreplica/rsyncd",
+                                        "wget -q -O /etc/rsyncd.conf https://raw.githubusercontent.com/layershift/mongodb-repset/master/configs/rsyncd",
                                         "openssl rand -base64 741 > /etc/mongo/mongodb.key",
                                         "chmod 600 /etc/mongo/mongodb.key",
                                         "chown -R mongod: /etc/mongo/",
