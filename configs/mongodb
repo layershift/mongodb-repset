@@ -39,7 +39,6 @@ replication:
 
 # Security specific options
 security:
-   #keyFile: "/path/to/keyfile"
    authorization: "disabled" # Enable or disable Role-Based Access Control (RBAC) to govern each user's access to database resources and operations.
 
 # Daemon specific options.
