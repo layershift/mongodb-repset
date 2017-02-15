@@ -10,7 +10,6 @@ port=52426
 [mongocerts]
     path = /etc/mongo/
     comment = Cert sync
-    auth users = admin
     secrets file = /etc/rsyncd.secrets
     list = yes
     read only = no
