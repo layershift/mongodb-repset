@@ -70,14 +70,14 @@
                             }, {
                                 "nodeId": "${nodes.nosqldb[1].id}",
                                 "commands": [
-                                        "/usr/bin/rsync -qart --port=52426 --password-file=/etc/rsyncd.secrets rsync://admin@${nodes.nosqldb[0].address}/mongocerts /etc/mongo/",
+                                        "/usr/bin/rsync -qart --port=52426 --password-file=/etc/rsyncd.secrets ${nodes.nosqldb[0].address}::mongocerts /etc/mongo/",
                                         "chown -R mongod: /etc/mongo/"
                                 ],
                                 "user": "root"
                             }, {
                                 "nodeId": "${nodes.nosqldb[2].id}",
                                 "commands": [
-                                        "/usr/bin/rsync -qart --port=52426 --password-file=/etc/rsyncd.secrets rsync://admin@${nodes.nosqldb[0].address}/mongocerts /etc/mongo/",
+                                        "/usr/bin/rsync -qart --port=52426 --password-file=/etc/rsyncd.secrets ${nodes.nosqldb[0].address}::mongocerts /etc/mongo/",
                                         "chown -R mongod: /etc/mongo/"
                                 ],
                                 "user": "root"
