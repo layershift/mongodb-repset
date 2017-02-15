@@ -91,7 +91,8 @@
                                 "nodeType": "mongodb",
                                 "commands": [
                                         "sed -i \"42 i\\    keyFile: \"/etc/mongo/mongodb.key\"\" /etc/mongod.conf",
-                                        "sed -i \"43 c\\    authorization: enabled\" /etc/mongod.conf"
+                                        "sed -i \"43 c\\    authorization: enabled\" /etc/mongod.conf",
+                                        "/etc/init.d/mongod restart"
                                 ],
                                 "user": "root"
                             }, {
