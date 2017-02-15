@@ -1,0 +1,104 @@
+{
+    "jpsType": "install",
+    "application": {
+        "category": "apps/clustered-dbs",
+        "id": "mongodb-replica",
+        "name": "MongoDB Replica Set",
+        "version": "3.0",
+        "type": "php",
+        "homepage": "http://www.mongodb.org/",
+        "logo": "http://jps.layershift.com/mongoreplica/mongodb.png",
+        "description": "A replica set in MongoDB is a group of mongod processes that maintain the same data set. Replica sets provide redundancy and high availability, and are the basis for all production deployments.",
+        "env": {
+            "topology": {
+                "engine": "php5.6",
+                "nodes": [{
+                        "extip": false,
+                        "count": 3,
+                        "cloudlets": 16,
+                        "nodeType": "mongodb"
+                    }
+                ]
+            }
+        },
+        "onInstall": {
+            "call": [
+                    "preInstall",
+                    "deployMongo",
+                    "installRockMongo"
+            ]
+        },
+        "procedures": [{
+                "id": "preInstall",
+                "onCall": [{
+                        "executeShellCommands": [{
+                                "nodeType": "mongodb",
+                                "commands": [
+                                        "wget -q -O /etc/mongod.conf http://jps.layershift.com/mongoreplica/mongodb 2>&1",
+                                        "chown jelastic: /etc/mongod.conf"
+                                ],
+                                "user": "root"
+                            }
+                        ]
+                    }
+                ]
+            }, {
+                "id": "deployMongo",
+                "onCall": [{
+                        "executeShellCommands": [{
+                                "nodeType": "mongodb",
+                                "commands": [
+                                        "killall mongod",
+                                        "rm -rf /var/lib/mongo/*"
+                                ],
+                                "user": "root"
+                            }, {
+                                "nodeType": "mongodb",
+                                "commands": [
+                                        "mongod --replSet 'rs0' --config /etc/mongod.conf --dbpath /var/lib/mongo/ --port 27017"
+                                ],
+                                "user": "jelastic"
+                            }, {
+                                "nodeId": "${nodes.nosqldb[0].id}",
+                                "commands": [
+                                        "wget -O /tmp/script.sh http://jps.layershift.com/mongoreplica/script.sh 2>&1",
+                                        "bash /tmp/script.sh ${nodes.nosqldb[0].address} ${nodes.nosqldb[1].address} ${nodes.nosqldb[2].address} ${nodes.nosqldb[0].password} 2>/dev/null 1>/dev/null",
+                                        "rm /tmp/script.sh"
+                                ],
+                                "user": "jelastic"
+                            }
+                        ]
+                    }
+                ]
+            }, {
+                "id": "installRockMongo",
+                "onCall": [{
+                        "appendFile": [{
+                                "nodeType": "mongodb",
+                                "path": "/etc/php.ini",
+                                "body": "[mongodb]\nmongo.native_long = 0"
+                            }
+                        ]
+                    }, {
+                        "executeShellCommands": [{
+                                "nodeType": "mongodb",
+                                "user": "root",
+                                "commands": [
+                                        "wget -O /tmp/rockmongo.tar.gz http://jps.layershift.com/mongoreplica/rockmongo.tar.gz 2>&1; cd /tmp/; tar -xzvf rockmongo.tar.gz 2>&1",
+                                        "rm -rf /var/www/html; mv -f /tmp/rockmongo /var/www/html  2>&1",
+                                        "rm -rf /tmp/rockmongo.tar.gz 2>&1",
+                                        "sed -i \"s:REPLICA_NAME:rs0:g\" /var/www/html/config.php 2>&1",
+                                        "sed -i \"s:MONGO_HOST:${nodes.nosqldb[0].address},${nodes.nosqldb[1].address},${nodes.nosqldb[2].address}:g\" /var/www/html/config.php 2>&1",
+                                        "service httpd restart"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "success": {
+            "text": "The environment with MongoDB Replica Set has been successfully created. The login and password of your database set are sent to your email address.<br><br /> <table style='font-size:13px; border: none;'><tr><td>RockMongo admin panel URL:</td><td style='padding-left: 10px;'><a href='${nodes.mongodb.url}' target='_blank'>${nodes.mongodb.url}/</a></td></tr></table><br />To add custom domain name for your Mongodb installation follow the steps described in our <a href='http://docs.jelastic.com/custom-domains' target='_blank'><u><b>documentation</b></u></a><br /><br />Connection to MongoDB - <a href='http://docs.jelastic.com/connection-to-mongodb' target='_blank'>documentation</a><br /><br />MongoDB configuration options- <a href='http://docs.mongodb.org/master/reference/configuration-options/' target='_blank'>documentation</a>"
+        }
+    }
+}

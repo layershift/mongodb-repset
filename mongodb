@@ -1,0 +1,52 @@
+# MongoDB YAML configuration file.
+# MongoDB Replica Set configuration.
+# Created by Layershift Dev Ops.
+# More configuration options available at: http://docs.mongodb.org/master/reference/configuration-options/
+
+# System logging options.
+systemLog:
+   destination: file
+   path: "/var/log/mongodb/mongod.log" # The path of the log file to which mongod or mongos should send all diagnostic logging information.
+   logAppend: true # When true, mongos or mongod appends new entries to the end of the existing log file when the mongos or mongod instance restarts.
+   verbosity: 2 # The default log message verbosity level for components.
+   timeStampFormat: iso8601-local # The time format for timestamps in log messages.
+   component:
+      replication:
+         verbosity: 3 #  The default log message verbosity level for replication.
+
+# Network communication options.
+net:
+   #bindIp: 0.0.0.0 # The IP address that mongos or mongod binds to in order to listen for connections from applications. 
+   port: 27017 # The TCP port on which the MongoDB instance listens for client connections.
+   maxIncomingConnections: 32768 # The maximum number of simultaneous connections that mongos or mongod will accept.
+   ipv6: false # Enable or disable IPv6 support.
+
+# Database storage options.
+storage:
+   dbPath: "/var/lib/mongo" # The directory where the mongod instance stores its data.
+   journal:
+      enabled: true # Enable or disable the durability journal to ensure data files remain valid and recoverable.
+   syncPeriodSecs: 5 # The amount of time that can pass before MongoDB flushes data to the data files via an fsync operation.
+   indexBuildRetry: true # Specifies whether mongod rebuilds incomplete indexes on the next start up.
+   engine: mmapv1 # The storage engine for the mongod database.
+   mmapv1:
+      smallFiles: true
+
+# Replication specific options.
+replication:
+   oplogSizeMB: 512
+   replSetName: "rs0" # The name of the replica set that the mongod is part of. All hosts in the replica set must have the same set name.
+
+# Security specific options
+security:
+   #keyFile: "/path/to/keyfile"
+   authorization: "disabled" # Enable or disable Role-Based Access Control (RBAC) to govern each user's access to database resources and operations.
+
+# Daemon specific options.
+processManagement:
+   pidFilePath: "/var/run/mongodb/mongod.pid"
+   fork: true # Enable a daemon mode that runs the mongos or mongod process in the background.
+
+# Administrative commands for modifying options normally set on the command line. 
+setParameter:
+   enableLocalhostAuthBypass: false # Specify 0 or false to disable localhost authentication bypass.
