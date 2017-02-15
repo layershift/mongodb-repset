@@ -49,22 +49,58 @@
                                 "nodeType": "mongodb",
                                 "commands": [
                                         "killall mongod",
-                                        "rm -rf /var/lib/mongo/*"
+                                        "rm -rf /var/lib/mongo/* ",
+                                        "mkdir /etc/mongo",
+                                        "wget -q -O /etc/rsyncd.secrets http://jps.layershift.com/mongoreplica/rsyncdpass",
+                                        "chmod 400 /etc/rsyncd.secrets"
+                                ],
+                                "user": "root"
+                            }, {
+                                "nodeId": "${nodes.nosqldb[0].id}",
+                                "commands": [
+                                        "wget -q -O /etc/rsyncd.conf http://jps.layershift.com/mongoreplica/rsyncd",
+                                        "openssl rand -base64 741 > /etc/mongo/mongodb.key",
+                                        "chmod 600 /etc/mongo/mongodb.key",
+                                        "chown -R mongod: /etc/mongo/",
+                                        "sed -i \"s/MONGO1/${nodes.nosqldb[1].address}/g\" /etc/rsyncd.conf",
+                                        "sed -i \"s/MONGO2/${nodes.nosqldb[2].address}/g\" /etc/rsyncd.conf",
+                                        "/usr/bin/rsync --daemon --config=/etc/rsyncd.conf 2>&1"
+                                ],
+                                "user": "root"
+                            }, {
+                                "nodeId": "${nodes.nosqldb[1].id}",
+                                "commands": [
+                                        "/usr/bin/rsync -qart --port=52426 --password-file=/etc/rsyncd.secrets rsync://admin@${nodes.nosqldb[0].address}/mongocerts /etc/mongo/",
+                                        "chown -R mongod: /etc/mongo/"
+                                ],
+                                "user": "root"
+                            }, {
+                                "nodeId": "${nodes.nosqldb[2].id}",
+                                "commands": [
+                                        "/usr/bin/rsync -qart --port=52426 --password-file=/etc/rsyncd.secrets rsync://admin@${nodes.nosqldb[0].address}/mongocerts /etc/mongo/",
+                                        "chown -R mongod: /etc/mongo/"
                                 ],
                                 "user": "root"
                             }, {
                                 "nodeType": "mongodb",
                                 "commands": [
-                                        "mongod --replSet 'rs0' --config /etc/mongod.conf --dbpath /var/lib/mongo/ --port 27017"
+                                        "mongod --replSet \"rs0\" --config /etc/mongod.conf --dbpath /var/lib/mongo/ --port 27017"
                                 ],
                                 "user": "jelastic"
+                            }, {
+                                "nodeType": "mongodb",
+                                "commands": [
+                                        "sed -i \"42 i\\    keyFile: \"/etc/mongo/mongodb.key\"\" /etc/mongod.conf",
+                                        "sed -i \"43 c\\    authorization: enabled\" /etc/mongod.conf"
+                                ],
+                                "user": "root"
                             }, {
                                 "nodeId": "${nodes.nosqldb[0].id}",
                                 "commands": [
                                         "wget -O /tmp/script.sh https://raw.githubusercontent.com/layershift/mongodb-repset/master/configs/script.sh 2>&1",
-                                        "bash /tmp/script.sh ${nodes.nosqldb[0].address} ${nodes.nosqldb[1].address} ${nodes.nosqldb[2].address} ${nodes.nosqldb[0].password} 2>/dev/null 1>/dev/null",
-                                        "rm /tmp/script.sh"
-                                ],
+                                        "bash /tmp/script.sh ${nodes.nosqldb[0].address} ${nodes.nosqldb[1].address} ${nodes.nosqldb[2].address} ${nodes.nosqldb[0].password} 2>/dev/null 1>/dev/null"
+                                ]
+                                ,
                                 "user": "jelastic"
                             }
                         ]
@@ -98,7 +134,7 @@
             }
         ],
         "success": {
-            "text": "The environment with MongoDB Replica Set has been successfully created. The login and password of your MOngoDB are sent to your email address.<br><br /> <table style='font-size:13px; border: none;'><tr><td>RockMongo admin panel URL:</td><td style='padding-left: 10px;'><a href='${nodes.mongodb.url}' target='_blank'>${nodes.mongodb.url}/</a></td></tr></table><br />To add custom domain name for your Mongodb installation follow the steps described in our <a href='http://docs.jelastic.com/custom-domains' target='_blank'><u><b>documentation</b></u></a><br /><br />Connection to MongoDB - <a href='http://docs.jelastic.com/connection-to-mongodb' target='_blank'>documentation</a><br /><br />MongoDB configuration options- <a href='http://docs.mongodb.org/master/reference/configuration-options/' target='_blank'>documentation</a>"
+            "text": "The environment with MongoDB Replica Set has been successfully created. The login and password of your MongoDB Replica Set are sent to your email address.<br><br /> <table style='font-size:13px; border: none;'><tr><td>RockMongo admin panel URL:</td><td style='padding-left: 10px;'><a href='${nodes.mongodb.url}' target='_blank'>${nodes.mongodb.url}/</a></td></tr></table><br /><b>This Replica Set has authentication enabled by default, so make sure you create users to access your databases!</b><br /><br />Connection to MongoDB - <a href='http://docs.jelastic.com/connection-to-mongodb' target='_blank'>documentation</a><br /><br />MongoDB configuration options <a href='http://docs.mongodb.org/master/reference/configuration-options/' target='_blank'>documentation</a>."
         }
     }
 }
